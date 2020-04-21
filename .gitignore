@@ -1,0 +1,5 @@
+lib/
+node_modules/
+persist/
+src/integrations/openems/.openems-develop
+.DS_STORE
