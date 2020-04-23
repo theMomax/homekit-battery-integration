@@ -33,6 +33,10 @@ accessory.publish({
 
 var openems = new Subscriber('ws://192.168.1.105/websocket', 'user')
 
-openems.subscribe(Subscriber.CHANNELFILTER_SUM, (channelId: string, value: any) => {
+openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY('edge0', '_sum', 'EssActivePower'), (channelId: string, value: any) => {
     debug(channelId, value)
+}).then((channels: String[]) => {
+    info(channels)
+}, (reason: any) => {
+    info(reason)
 })
