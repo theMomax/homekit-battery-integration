@@ -2,6 +2,8 @@ import {init, Accessory, Service, Characteristic, CharacteristicEventTypes, uuid
 import {Subscriber} from './integrations/openems/subscriber'
 var debug = require('debug')('custom:accessory:debug')
 var info = require('debug')('custom:accessory:info')
+var warn = require('debug')('custom:accessory:warn')
+var error = require('debug')('custom:accessory:error')
 
 init();
 
@@ -32,11 +34,24 @@ accessory.publish({
 });
 
 var openems = new Subscriber('ws://192.168.1.105/websocket', 'user')
+openems.init().then(value => {
+    warn(openems.getEdges())
+    warn(openems.getEdgeComponents('edge0'))
+    warn(openems.getComponentChannels('edge0', '_sum'))
 
-openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY('edge0', '_sum', 'EssActivePower'), (channelId: string, value: any) => {
-    debug(channelId, value)
-}).then((channels: String[]) => {
-    info(channels)
-}, (reason: any) => {
-    info(reason)
+    openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY('edge0', '_sum', 'EssActivePower'), (channelId: string, value: any) => {
+        debug(channelId, value)
+    }).then((channels: String[]) => {
+        info(channels)
+        openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY('edge0', '_sum', 'EssSoc'), (channelId: string, value: any) => {
+            debug(channelId, value)
+        }).then((channels: String[]) => {
+            info(channels)
+        }, (reason: any) => {
+            error(reason)
+        })
+    }, (reason: any) => {
+        error(reason)
+    })
 })
+

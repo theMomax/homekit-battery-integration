@@ -94,6 +94,7 @@ export class JsonRPC {
     public request(rq: JsonrpcRequest): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.requests.set(rq.id, {resolve: resolve, reject: reject})
+            debug('message sent: ' + JSON.stringify(rq))
             this.ws.send(JSON.stringify(rq))
         })
     }

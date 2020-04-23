@@ -22,6 +22,7 @@
   ],
   "dependencies": {
     "angular2-uuid": "^1.1.1",
+    "commander": "^5.0.0",
     "date-fns": "^2.12.0",
     "debug": "^4.1.1",
     "hap-nodejs": "^0.5.11",
