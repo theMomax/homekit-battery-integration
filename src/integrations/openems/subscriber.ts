@@ -102,7 +102,7 @@ export class Subscriber {
           return params.edgeId === String(ei.edge.id) && params.payload.method === CurrentDataNotification.METHOD
         })
         
-        info('additionally requesting subscriptions for ' + channelsToSubscribe.length + ' channel(s) from edge' + ei.edge.id + ': ' + channelsToSubscribe.join(', '))
+        info('additionally requesting subscription for ' + channelsToSubscribe.length + ' channel(s) from edge' + ei.edge.id + ': ' + channelsToSubscribe.join(', '))
         this.subscribedChannels.push(...channelsToSubscribe.map(ca => 'edge' + ei.edge.id + '/' + ca.toString()))
         await this.jsonrpc.request(new EdgeRpcRequest({edgeId: ei.edge.id, payload: new SubscribeChannelsRequest(this.subscribedChannels.map(a => {
           let channelPathComponents = a.split('/')
