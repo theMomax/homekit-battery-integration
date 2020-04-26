@@ -11,6 +11,8 @@ const { program } = require('commander');
 program
     .option('-oa, --openems-address <url>', 'address of your OpenEMS installation in your local network')
     .option('-op, --openems-password <plaintext>', 'password for your local OpenEMS frontend', 'user')
+    .option('-oc, --openems-bridge-pincode <plaintext>', 'numeric pincode for the hosted openems bridges formatted as XXX-XX-XXX', '123-45-678')
+    .option('-oc, --openems-bridge-port <plaintext>', 'host port for all openems bridges', '58234')
 
 
 const MAC_PREFIX = "43:CF:2C:27:2A:1D"
@@ -21,6 +23,7 @@ export default async function init() {
         return
     }
 
+    info(program.openemsBridgePincode)
     info('starting openems integration')
     while (true) {
         try {
@@ -41,8 +44,8 @@ export default async function init() {
 
                 edge.publish({
                     username: edgeIdToMAC(edgeId),
-                    pincode: "123-45-678",
-                    port: 58234,
+                    pincode: program.openemsBridgePincode,
+                    port: program.openemsBridgePort,
                 })
             })
             
