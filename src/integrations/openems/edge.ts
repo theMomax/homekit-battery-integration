@@ -3,9 +3,11 @@ import { Subscriber } from "./subscriber"
 import { BatteryService } from "hap-nodejs/dist/lib/gen/HomeKit";
 import { AccessoryInfo } from "hap-nodejs/dist/lib/model/AccessoryInfo";
 import { ControllerService } from "../../homekit/services/controller"
+import { EnergyStorageService } from "../../homekit/services/energy-storage"
 import { ElectricityMeterService } from "../../homekit/services/electricity-meter"
 import { CurrentPower, CurrentPowerL1, CurrentPowerL2, CurrentPowerL3 } from "../../homekit/characteristics/current-power";
 import { NumericBinding, Binding } from "../../util/bindings"
+import { EnergyCapacity } from "../../homekit/characteristics/energy-capacity";
 
 var debug = require('debug')('openems:edge:debug')
 var info = require('debug')('openems:edge:info')
@@ -51,14 +53,14 @@ class EMSIntegration extends Accessory {
             this.addService(new MeterIntegration(openems, 'Grid', edgeId, componentId, 'Grid'))
         }
 
-        if (componentId.startsWith('meter')) {
+        if (componentId.startsWith('meter') || componentId.startsWith('ess')) {
             this.addService(new MeterIntegration(openems, componentId, edgeId, componentId))
         }
     }
 
 }
 
-class BatteryIntegration extends BatteryService {
+class BatteryIntegration extends EnergyStorageService {
 
     constructor(openems: Subscriber, displayName: string, edgeId: string, componentId: string, channelPrefix: string = '') {
         super(displayName)
@@ -79,9 +81,14 @@ class BatteryIntegration extends BatteryService {
         openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'Soc'), (channelId, value) => {
             binding.updateAny('essSoc', value)
         })
-
         openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'ActivePower'), (channelId, value) => {
             binding.updateAny('essActivePower', value)
+        })
+
+        const capacityBinding = new NumericBinding(0, this.getCharacteristic(EnergyCapacity))
+
+        openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'Capacity'), (channelId, value) => {
+            capacityBinding.update(Number(value))
         })
     }
 }

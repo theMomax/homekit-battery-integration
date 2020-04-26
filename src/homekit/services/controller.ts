@@ -12,5 +12,6 @@ export class ControllerService extends Service {
         this.addCharacteristic(Characteristic.StatusFault);
 
         // Optional Characteristics
+        this.addOptionalCharacteristic(Characteristic.Name);
     }
 }
