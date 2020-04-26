@@ -16,6 +16,7 @@ export class EnergyCapacity extends Characteristic {
         format: Formats.FLOAT,
         // @ts-ignore
         unit: Units.KWH,
+        minValue: 0,
         perms: [Perms.READ, Perms.NOTIFY]
         });
         this.value = this.getDefaultValue();
