@@ -40,6 +40,19 @@ export default async function init() {
             })
 
             openems.getEdges().forEach(edgeId => {
+                let config = openems.getEdgeConfig(edgeId)
+                warn(config)
+                openems.getEdgeComponents(edgeId).forEach(componentId => {
+                    if (!componentId.startsWith('_sum') && !componentId.startsWith('ess') && !componentId.startsWith('meter')) {
+                        return
+                    }
+
+                    warn(componentId)
+                    warn(config.factories[config.components[componentId].factoryId])
+                })
+            })
+
+            openems.getEdges().forEach(edgeId => {
                 let edge = new EdgeIntegration(openems, edgeId, edgeId)
 
                 edge.publish({
@@ -48,7 +61,7 @@ export default async function init() {
                     port: program.openemsBridgePort,
                 })
             })
-            
+
             await never()
         } catch (err) {
             error(err)

@@ -24,8 +24,14 @@ export class JsonRPC {
 
     private ws: any
 
+    private opened: boolean = false
+
 
     public async open(): Promise<void> {
+        if (this.opened) {
+            return
+        }
+
         // reset requests after possible re-connect
         this.requests = new Map<String, {resolve: (value?: any) => void, reject: (reason?: any) => void}>()
 
@@ -75,6 +81,7 @@ export class JsonRPC {
 
         return new Promise<void>((resolve, _reject) => {
             this.ws.on('open', () => {
+                this.opened = true
                 info('connection opened')
                 resolve()
             })
@@ -82,7 +89,11 @@ export class JsonRPC {
     }
 
     public close() {
+        if (!this.opened) {
+            return
+        }
         this.ws.close()
+        this.opened = false
         info('connection closed')
     }
 

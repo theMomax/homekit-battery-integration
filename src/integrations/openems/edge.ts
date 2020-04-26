@@ -21,9 +21,12 @@ export class EdgeIntegration extends Bridge {
         this.category = Categories.BRIDGE
 
         let ai = this.getService(Service.AccessoryInformation)
-        ai.setCharacteristic(Characteristic.Manufacturer, "OpenEMS")
-        // TODO: add accessory information
-        
+        ai.getCharacteristic(Characteristic.Manufacturer).updateValue("OpenEMS Association")
+        ai.getCharacteristic(Characteristic.Model).updateValue("OpenEMS")
+        openems.get(Subscriber.CHANNELFILTER_EXACTLY(edgeId, '_meta','Version')).then(values => {
+            ai.getCharacteristic(Characteristic.FirmwareRevision).updateValue(String((values.get(edgeId + '/_meta/Version'))))
+        })
+
         for (const componentId of openems.getEdgeComponents(edgeId)) {
             if (componentId === '_sum' || componentId.startsWith('meter') || componentId.startsWith('ess')) {
                 this.addBridgedAccessory(new EMSIntegration(openems, componentId, edgeId, componentId))
@@ -37,8 +40,13 @@ class EMSIntegration extends Accessory {
     constructor(openems: Subscriber, displayName: string, edgeId: string, componentId: string) {
         super(displayName, uuid.generate("homekit-battery-integration-openems-" + edgeId + '-' + componentId))
 
+        const config = openems.getEdgeConfig(edgeId)
+
         let ai = this.getService(Service.AccessoryInformation)
-        // TODO: add accessory information
+        if (!!config.factories[config.components[componentId].factoryId]) {
+            ai.getCharacteristic(Characteristic.Model).updateValue(config.factories[config.components[componentId].factoryId].name)
+        }
+
 
         this.addService(new ControllerIntegration(openems, 'OpenEMS', edgeId, componentId))
 
@@ -85,10 +93,8 @@ class BatteryIntegration extends EnergyStorageService {
             binding.updateAny('essActivePower', value)
         })
 
-        const capacityBinding = new NumericBinding(0, this.getCharacteristic(EnergyCapacity))
-
-        openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'Capacity'), (channelId, value) => {
-            capacityBinding.update(Number(value))
+        openems.get(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'Capacity')).then(values => {
+            this.getCharacteristic(EnergyCapacity).updateValue(Number((values.get(edgeId + '/' + componentId + '/' + channelPrefix + 'Capacity'))))
         })
     }
 }
