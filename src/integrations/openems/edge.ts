@@ -1,6 +1,6 @@
-import {init, Accessory, Service, Characteristic, CharacteristicEventTypes, uuid, CharacteristicGetCallback, CharacteristicSetCallback, CharacteristicValue, Bridge, Categories} from "hap-nodejs";
+import { Accessory, Service, Characteristic, uuid, Bridge, Categories} from "hap-nodejs";
 import { Subscriber } from "./subscriber"
-import { BatteryService, Door } from "hap-nodejs/dist/lib/gen/HomeKit";
+import { BatteryService } from "hap-nodejs/dist/lib/gen/HomeKit";
 import { AccessoryInfo } from "hap-nodejs/dist/lib/model/AccessoryInfo";
 import { ControllerService } from "../../homekit/services/controller"
 import { ElectricityMeterService } from "../../homekit/services/electricity-meter"
@@ -10,8 +10,6 @@ var debug = require('debug')('openems:edge:debug')
 var info = require('debug')('openems:edge:info')
 var warn = require('debug')('openems:edge:warn')
 var error = require('debug')('openems:edge:error')
-
-// const { program } = require('commander');
 
 export class EdgeIntegration extends Bridge {
 

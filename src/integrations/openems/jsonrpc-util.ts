@@ -28,6 +28,9 @@ export class JsonRPC {
     public async open(): Promise<void> {
         // reset requests after possible re-connect
         this.requests = new Map<String, {resolve: (value?: any) => void, reject: (reason?: any) => void}>()
+
+        info('opening websocket at ' + this.url)
+
         this.ws = new WebSocket(this.url)
     
         this.ws.on('message', (data: any) => {
