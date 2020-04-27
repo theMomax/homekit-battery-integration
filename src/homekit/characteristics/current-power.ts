@@ -25,7 +25,7 @@ class Power extends Characteristic {
 
 export class CurrentPower extends Power {
 
-    static readonly UUID: string = '00000003-0000-1000-8000-0036AC324978';
+    static readonly UUID: string = '00000001-0001-1000-8000-0036AC324978';
 
     constructor() {
         super('Current Power', CurrentPower.UUID);
@@ -38,10 +38,10 @@ export class CurrentPower extends Power {
 
 export class CurrentPowerL1 extends Power {
 
-    static readonly UUID: string = '00000004-0000-1000-8000-0036AC324978';
+    static readonly UUID: string = '00000002-0001-1000-8000-0036AC324978';
 
     constructor() {
-        super('Current Power L1', CurrentPower.UUID);
+        super('Current Power L1', CurrentPowerL1.UUID);
     }
 }
 
@@ -51,10 +51,10 @@ export class CurrentPowerL1 extends Power {
 
 export class CurrentPowerL2 extends Power {
 
-    static readonly UUID: string = '00000005-0000-1000-8000-0036AC324978';
+    static readonly UUID: string = '00000003-0001-1000-8000-0036AC324978';
 
     constructor() {
-        super('Current Power L2', CurrentPower.UUID);
+        super('Current Power L2', CurrentPowerL2.UUID);
     }
 }
 
@@ -64,9 +64,9 @@ export class CurrentPowerL2 extends Power {
 
 export class CurrentPowerL3 extends Power {
 
-    static readonly UUID: string = '00000006-0000-1000-8000-0036AC324978';
+    static readonly UUID: string = '00000004-0001-1000-8000-0036AC324978';
 
     constructor() {
-        super('Current Power L3', CurrentPower.UUID);
+        super('Current Power L3', CurrentPowerL3.UUID);
     }
 }

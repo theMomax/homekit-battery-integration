@@ -3,8 +3,11 @@ import { Subscriber } from "./subscriber"
 import { BatteryService } from "hap-nodejs/dist/lib/gen/HomeKit";
 import { AccessoryInfo } from "hap-nodejs/dist/lib/model/AccessoryInfo";
 import { ControllerService } from "../../homekit/services/controller"
+import { EnergyStorageService } from "../../homekit/services/energy-storage"
 import { ElectricityMeterService } from "../../homekit/services/electricity-meter"
-import { CurrentPower } from "../../homekit/characteristics/current-power";
+import { CurrentPower, CurrentPowerL1, CurrentPowerL2, CurrentPowerL3 } from "../../homekit/characteristics/current-power";
+import { NumericBinding, Binding } from "../../util/bindings"
+import { EnergyCapacity } from "../../homekit/characteristics/energy-capacity";
 
 var debug = require('debug')('openems:edge:debug')
 var info = require('debug')('openems:edge:info')
@@ -15,8 +18,20 @@ export class EdgeIntegration extends Bridge {
 
     constructor(openems: Subscriber, displayName: string, edgeId: string) {
         super(displayName, uuid.generate("homekit-battery-integration-openems-" + edgeId))
-        this.addBridgedAccessory(new EMSIntegration(openems, 'Sum', edgeId, '_sum'))
         this.category = Categories.BRIDGE
+
+        let ai = this.getService(Service.AccessoryInformation)
+        ai.getCharacteristic(Characteristic.Manufacturer).updateValue("OpenEMS Association")
+        ai.getCharacteristic(Characteristic.Model).updateValue("OpenEMS")
+        openems.get(Subscriber.CHANNELFILTER_EXACTLY(edgeId, '_meta','Version')).then(values => {
+            ai.getCharacteristic(Characteristic.FirmwareRevision).updateValue(String((values.get(edgeId + '/_meta/Version'))))
+        })
+
+        for (const componentId of openems.getEdgeComponents(edgeId)) {
+            if (componentId === '_sum' || componentId.startsWith('meter') || componentId.startsWith('ess')) {
+                this.addBridgedAccessory(new EMSIntegration(openems, componentId, edgeId, componentId))
+            }
+        }
     }
 }
 
@@ -25,43 +40,62 @@ class EMSIntegration extends Accessory {
     constructor(openems: Subscriber, displayName: string, edgeId: string, componentId: string) {
         super(displayName, uuid.generate("homekit-battery-integration-openems-" + edgeId + '-' + componentId))
 
+        const config = openems.getEdgeConfig(edgeId)
+
         let ai = this.getService(Service.AccessoryInformation)
+        if (!!config.factories[config.components[componentId].factoryId]) {
+            ai.getCharacteristic(Characteristic.Model).updateValue(config.factories[config.components[componentId].factoryId].name)
+        }
 
-        ai.setCharacteristic(Characteristic.Manufacturer, "OpenEMS")
 
-        this.addService(new BatteryIntegration(openems, 'Battery', edgeId, componentId))
         this.addService(new ControllerIntegration(openems, 'OpenEMS', edgeId, componentId))
-        this.addService(new MeterIntegration(openems, 'Ess', edgeId, componentId, 'Ess'))
-        this.addService(new MeterIntegration(openems, 'Production', edgeId, componentId, 'Production'))
-        this.addService(new MeterIntegration(openems, 'Consumption', edgeId, componentId, 'Consumption'))
-        this.addService(new MeterIntegration(openems, 'Grid', edgeId, componentId, 'Grid'))
+
+        if (componentId === '_sum' || componentId.startsWith('ess')) {
+            this.addService(new BatteryIntegration(openems, 'Battery', edgeId, componentId, componentId === '_sum' ? 'Ess' : ''))
+        }
+
+        if (componentId === '_sum') {
+            this.addService(new MeterIntegration(openems, 'Ess', edgeId, componentId, 'Ess'))
+            this.addService(new MeterIntegration(openems, 'Production', edgeId, componentId, 'Production'))
+            this.addService(new MeterIntegration(openems, 'Consumption', edgeId, componentId, 'Consumption'))
+            this.addService(new MeterIntegration(openems, 'Grid', edgeId, componentId, 'Grid'))
+        }
+
+        if (componentId.startsWith('meter') || componentId.startsWith('ess')) {
+            this.addService(new MeterIntegration(openems, componentId, edgeId, componentId))
+        }
     }
 
 }
 
-class BatteryIntegration extends BatteryService {
+class BatteryIntegration extends EnergyStorageService {
 
-    constructor(openems: Subscriber, displayName: string, edgeId: string, componentId: string) {
+    constructor(openems: Subscriber, displayName: string, edgeId: string, componentId: string, channelPrefix: string = '') {
         super(displayName)
-        openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'EssSoc'), (channelId, value) => {
-            this.essSoc = Number(value)
-            this.update()
+
+        const binding = new Binding({
+            essSoc: Number,
+            essActivePower: Number,
+        }, {
+            batteryLevel: this.getCharacteristic(Characteristic.BatteryLevel),
+            statusLowBattery: this.getCharacteristic(Characteristic.StatusLowBattery),
+            chargingState: this.getCharacteristic(Characteristic.ChargingState),
+        }, (values, characteristics) => {
+            characteristics.batteryLevel.updateValue(values.essSoc)
+            characteristics.statusLowBattery.updateValue(values.essSoc <= 20)
+            characteristics.chargingState.updateValue(values.essSoc === 100 && values.essActivePower === 0 ? 2 : values.essActivePower < 0 ? 1 : 0)
         })
 
-        openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'EssActivePower'), (channelId, value) => {
-            this.essActivePower = Number(value)
-            this.update()
+        openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'Soc'), (channelId, value) => {
+            binding.updateAny('essSoc', value)
         })
-    }
+        openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'ActivePower'), (channelId, value) => {
+            binding.updateAny('essActivePower', value)
+        })
 
-    private essSoc: number = 0
-    private essActivePower: number = 0
-
-    private update() {
-        debug(`update values: essSoc=${this.essSoc}; essActivePower=${this.essActivePower}`)
-        this.getCharacteristic(Characteristic.BatteryLevel).updateValue(this.essSoc)
-        this.getCharacteristic(Characteristic.StatusLowBattery).updateValue(this.essSoc <= 20)
-        this.getCharacteristic(Characteristic.ChargingState).updateValue(this.essSoc === 100 && this.essActivePower === 0 ? 2 : this.essActivePower < 0 ? 1 : 0)
+        openems.get(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'Capacity')).then(values => {
+            this.getCharacteristic(EnergyCapacity).updateValue(Number((values.get(edgeId + '/' + componentId + '/' + channelPrefix + 'Capacity'))))
+        })
     }
 }
 
@@ -69,17 +103,10 @@ class ControllerIntegration extends ControllerService {
     constructor(openems: Subscriber, displayName: string, edgeId: string, componentId: string) {
         super(displayName)
 
+        const faultBinding = new NumericBinding(1, this.getCharacteristic(Characteristic.StatusFault), (state) => state < 2 ? 0 : 1)
         openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'State'), (channelId, value) => {
-            this.state = Number(value)
-            this.update()
+            faultBinding.update(Number(value))
         })
-    }
-
-    private state = 1
-
-    private update() {
-        debug(`update values: state=${this.state}`)
-        this.getCharacteristic(Characteristic.StatusFault).updateValue(this.state <= 1 ? 0 : 1)
     }
 }
 
@@ -88,16 +115,27 @@ class MeterIntegration extends ElectricityMeterService {
         super(displayName)
         this.subtype = channelPrefix.toLowerCase()
 
+        const powerBinding = new NumericBinding(0, this.getCharacteristic(CurrentPower))
         openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'ActivePower'), (channelId, value) => {
-            this.activePower = Number(value)
-            this.update()
+            powerBinding.update(Number(value))
         })
-    }
 
-    private activePower = 0
+        if (openems.getComponentChannels(edgeId, componentId).includes(channelPrefix + 'ActivePowerL1')
+        && openems.getComponentChannels(edgeId, componentId).includes(channelPrefix + 'ActivePowerL2')
+        && openems.getComponentChannels(edgeId, componentId).includes(channelPrefix + 'ActivePowerL3')) {
 
-    private update() {
-        debug(`update values: activePower=${this.activePower}`)
-        this.getCharacteristic(CurrentPower).updateValue(this.activePower)
+            const powerBindingL1 = new NumericBinding(0, this.getCharacteristic(CurrentPowerL1))
+            openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'ActivePowerL1'), (channelId, value) => {
+                powerBindingL1.update(Number(value))
+            })
+            const powerBindingL2 = new NumericBinding(0, this.getCharacteristic(CurrentPowerL2))
+            openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'ActivePowerL2'), (channelId, value) => {
+                powerBindingL2.update(Number(value))
+            })
+            const powerBindingL3 = new NumericBinding(0, this.getCharacteristic(CurrentPowerL3))
+            openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'ActivePowerL3'), (channelId, value) => {
+                powerBindingL3.update(Number(value))
+            })
+        }
     }
 }
