@@ -21,7 +21,10 @@ See [Integrations](#Integrations) for information on how to configure each integ
 
 ### Install Release
 
-There is no release yet.
+* `npm i -g homekit-battery-integration`
+* `DEBUG="*,-*:debug" homekit-battery-integration`
+
+Again, see [Integrations](#Integrations) for information on how to configure each integration.
 
 ## Features
 
