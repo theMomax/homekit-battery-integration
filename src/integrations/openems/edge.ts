@@ -94,7 +94,7 @@ class BatteryIntegration extends EnergyStorageService {
         })
 
         openems.get(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'Capacity')).then(values => {
-            this.getCharacteristic(EnergyCapacity).updateValue(Number((values.get(edgeId + '/' + componentId + '/' + channelPrefix + 'Capacity'))))
+            this.getCharacteristic(EnergyCapacity).updateValue(Number((values.get(edgeId + '/' + componentId + '/' + channelPrefix + 'Capacity'))) / 1000.0)
         })
     }
 }
