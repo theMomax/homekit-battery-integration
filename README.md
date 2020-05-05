@@ -32,7 +32,7 @@ As of right now there is no app that supports the custom services defined in thi
 
 Overview                   |  Bridge Information       |  Accessory Information    |  Sum Accessory ([Eve App](https://apps.apple.com/de/app/elgato-eve/id917695792))
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](https://user-images.githubusercontent.com/21169289/80403759-6d798400-88c0-11ea-8dc6-354f13243df2.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/80403744-63f01c00-88c0-11ea-9429-b28ce9baa70a.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/80403766-710d0b00-88c0-11ea-8eca-9609f0883ed6.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/80403770-7407fb80-88c0-11ea-9d9b-ac24de822f5b.PNG)
+![](https://user-images.githubusercontent.com/21169289/80403759-6d798400-88c0-11ea-8dc6-354f13243df2.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/80403744-63f01c00-88c0-11ea-9429-b28ce9baa70a.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/80403766-710d0b00-88c0-11ea-8eca-9609f0883ed6.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/81083501-f57d1080-8ef4-11ea-8719-96d8643a5adb.jpeg)
 
 ## Integrations
 

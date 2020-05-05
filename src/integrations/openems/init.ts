@@ -8,14 +8,16 @@ var error = require('debug')('openems:init:error')
 
 const { program } = require('commander');
 
+
+const MAC_PREFIX = "43:CF:2C:27:2A:1D"
+
 program
     .option('-oa, --openems-address <url>', 'address of your OpenEMS installation in your local network')
     .option('-op, --openems-password <plaintext>', 'password for your local OpenEMS frontend', 'user')
-    .option('-oc, --openems-bridge-pincode <plaintext>', 'numeric pincode for the hosted openems bridges formatted as XXX-XX-XXX', '123-45-678')
-    .option('-oc, --openems-bridge-port <plaintext>', 'host port for all openems bridges', '58234')
+    .option('--openems-bridge-pincode <plaintext>', 'numeric pincode for the hosted openems bridges formatted as XXX-XX-XXX', '123-45-678')
+    .option('--openems-bridge-username <plaintext>', 'the username-prefix for all openems bridges', MAC_PREFIX)
 
 
-const MAC_PREFIX = "43:CF:2C:27:2A:1D"
 
 export default async function init() {
     if (!program.openemsAddress) {
@@ -45,7 +47,6 @@ export default async function init() {
                 edge.publish({
                     username: edgeIdToMAC(edgeId),
                     pincode: program.openemsBridgePincode,
-                    port: program.openemsBridgePort,
                 })
             })
 
@@ -63,7 +64,7 @@ function edgeIdToMAC(edgeId: string): string {
     for (let i = edgeNrHex.length-2; i > 0; i-=2) {
         edgeNrHex = edgeNrHex.slice(0, i) + ':' + edgeNrHex.slice(i)
     }
-    return MAC_PREFIX.slice(0, MAC_PREFIX.length - edgeNrHex.length) + edgeNrHex
+    return program.openemsBridgeUsername.slice(0, program.openemsBridgeUsername.length - edgeNrHex.length) + edgeNrHex
 }
 
 function delay(ms: number) {
