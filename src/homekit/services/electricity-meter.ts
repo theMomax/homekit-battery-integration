@@ -1,5 +1,6 @@
 import { Service, Characteristic } from 'hap-nodejs';
 import { CurrentPower, CurrentPowerL1, CurrentPowerL2, CurrentPowerL3 } from '../characteristics/current-power';
+import { ElectricityMeterType } from '../characteristics/electricity-meter-type'
 
 /**
  * Custom Service "Electricity Meter Service"
@@ -17,5 +18,7 @@ export class ElectricityMeterService extends Service {
         this.addOptionalCharacteristic(CurrentPowerL1)
         this.addOptionalCharacteristic(CurrentPowerL2)
         this.addOptionalCharacteristic(CurrentPowerL3)
+
+        this.addOptionalCharacteristic(ElectricityMeterType)
     }
 }

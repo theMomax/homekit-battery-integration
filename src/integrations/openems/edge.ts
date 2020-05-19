@@ -1,13 +1,12 @@
 import { Accessory, Service, Characteristic, uuid, Bridge, Categories} from "hap-nodejs";
 import { Subscriber } from "./subscriber"
-import { BatteryService } from "hap-nodejs/dist/lib/gen/HomeKit";
-import { AccessoryInfo } from "hap-nodejs/dist/lib/model/AccessoryInfo";
 import { ControllerService } from "../../homekit/services/controller"
 import { EnergyStorageService } from "../../homekit/services/energy-storage"
 import { ElectricityMeterService } from "../../homekit/services/electricity-meter"
 import { CurrentPower, CurrentPowerL1, CurrentPowerL2, CurrentPowerL3 } from "../../homekit/characteristics/current-power";
 import { NumericBinding, Binding } from "../../util/bindings"
 import { EnergyCapacity } from "../../homekit/characteristics/energy-capacity";
+import { ElectricityMeterType, ElectricityMeterTypes } from "../../homekit/characteristics/electricity-meter-type";
 
 var debug = require('debug')('openems:edge:debug')
 var info = require('debug')('openems:edge:info')
@@ -115,6 +114,40 @@ class MeterIntegration extends ElectricityMeterService {
         super(displayName)
         this.subtype = channelPrefix.toLowerCase()
 
+        if (componentId === '_sum') {
+            switch (channelPrefix) {
+            case 'Ess':
+                this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.STORAGE)
+                break
+            case 'Production':
+                this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.PRODUCTION)
+                break
+            case 'Consumption':
+                this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.CONSUMPTION)
+                break
+            case 'Grid':
+                this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.GRID)
+                break
+            default:
+                this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.OTHER)
+                break
+            }
+        } else {
+            const config = openems.getEdgeConfig(edgeId)
+
+            switch (config.components[componentId].properties['type']) {
+            case 'GRID':
+                this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.GRID)
+                break
+            case 'PRODUCTION':
+                this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.PRODUCTION)
+                break
+            default:
+                this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.OTHER)
+                break
+            }
+        }
+
         const powerBinding = new NumericBinding(0, this.getCharacteristic(CurrentPower))
         openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'ActivePower'), (channelId, value) => {
             powerBinding.update(Number(value))
@@ -134,6 +167,22 @@ class MeterIntegration extends ElectricityMeterService {
             })
             const powerBindingL3 = new NumericBinding(0, this.getCharacteristic(CurrentPowerL3))
             openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'ActivePowerL3'), (channelId, value) => {
+                powerBindingL3.update(Number(value))
+            })
+        } else if (openems.getComponentChannels(edgeId, componentId).includes(channelPrefix + 'AcActivePowerL1')
+        && openems.getComponentChannels(edgeId, componentId).includes(channelPrefix + 'AcActivePowerL2')
+        && openems.getComponentChannels(edgeId, componentId).includes(channelPrefix + 'AcActivePowerL3')) {
+
+            const powerBindingL1 = new NumericBinding(0, this.getCharacteristic(CurrentPowerL1))
+            openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'AcActivePowerL1'), (channelId, value) => {
+                powerBindingL1.update(Number(value))
+            })
+            const powerBindingL2 = new NumericBinding(0, this.getCharacteristic(CurrentPowerL2))
+            openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'AcActivePowerL2'), (channelId, value) => {
+                powerBindingL2.update(Number(value))
+            })
+            const powerBindingL3 = new NumericBinding(0, this.getCharacteristic(CurrentPowerL3))
+            openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, channelPrefix + 'AcActivePowerL3'), (channelId, value) => {
                 powerBindingL3.update(Number(value))
             })
         }
