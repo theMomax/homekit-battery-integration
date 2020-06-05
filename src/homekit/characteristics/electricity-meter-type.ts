@@ -6,6 +6,7 @@ export enum ElectricityMeterTypes {
     CONSUMPTION = 2,
     STORAGE = 3,
     GRID = 4,
+    EXCESS = 5
 }
 
 /**
@@ -16,7 +17,7 @@ export enum ElectricityMeterTypes {
  * rules:
  *  1. A meter without this type characteristic is assumed to be of type OTHER
  *  2. The meaning of a positive/negative CurrentPower depends on the type:
- *      - PRODUCTION, CONSUMPTION, OTHER: a positive value has a good
+ *      - PRODUCTION, CONSUMPTION, EXCESS, OTHER: a positive value has a good
  *        connotation for the user
  *      - STORAGE, GRID: a negative value has a bad connotation for the user
  *     E.g.: A negative current power at the mains connection means the user is
@@ -34,6 +35,7 @@ export class ElectricityMeterType extends Characteristic {
         format: Formats.UINT8,
         minValue: 0,
         maxValue: 4,
+        validValues: Object.keys(ElectricityMeterTypes).map(key => Number(ElectricityMeterTypes[key])).filter(e => !isNaN(e)),
         perms: [Perms.READ]
         });
     }

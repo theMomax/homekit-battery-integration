@@ -151,8 +151,8 @@ UUID  |  00000006-0001-1000-8000-0036AC324978
 Permissions  |  Paired Read
 Format  |  uint8
 Minimum Value   |  0
-Maximum Value   |  4
-Unit   |  watt
+Maximum Value   |  5
+Valid Values | 0 "other" <br> 1 "production" <br> 2 "consumption" <br> 3 "storage" <br> 4 "grid" <br> 5 "excess"
 
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FtheMomax%2Fhomekit-battery-integration.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FtheMomax%2Fhomekit-battery-integration?ref=badge_large)
