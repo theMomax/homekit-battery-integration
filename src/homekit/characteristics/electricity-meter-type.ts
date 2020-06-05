@@ -6,7 +6,7 @@ export enum ElectricityMeterTypes {
     CONSUMPTION = 2,
     STORAGE = 3,
     GRID = 4,
-    EXCESS = 5
+    EXCESS = 5,
 }
 
 /**
@@ -34,7 +34,7 @@ export class ElectricityMeterType extends Characteristic {
         this.setProps({
         format: Formats.UINT8,
         minValue: 0,
-        maxValue: 4,
+        maxValue: 5,
         validValues: Object.keys(ElectricityMeterTypes).map(key => Number(ElectricityMeterTypes[key])).filter(e => !isNaN(e)),
         perms: [Perms.READ]
         });

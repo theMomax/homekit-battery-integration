@@ -4,7 +4,7 @@ import { ControllerService } from "../../homekit/services/controller"
 import { EnergyStorageService } from "../../homekit/services/energy-storage"
 import { ElectricityMeterService } from "../../homekit/services/electricity-meter"
 import { CurrentPower, CurrentPowerL1, CurrentPowerL2, CurrentPowerL3 } from "../../homekit/characteristics/current-power";
-import { NumericBinding, Binding } from "../../util/bindings"
+import { NumericBinding, Binding, CombinedBinding } from "../../util/bindings"
 import { EnergyCapacity } from "../../homekit/characteristics/energy-capacity";
 import { ElectricityMeterType, ElectricityMeterTypes } from "../../homekit/characteristics/electricity-meter-type";
 
@@ -58,6 +58,7 @@ class EMSIntegration extends Accessory {
             this.addService(new MeterIntegration(openems, 'Production', edgeId, componentId, 'Production'))
             this.addService(new MeterIntegration(openems, 'Consumption', edgeId, componentId, 'Consumption'))
             this.addService(new MeterIntegration(openems, 'Grid', edgeId, componentId, 'Grid'))
+            this.addService(new CombinedMeterIntegration(openems, 'Excess', edgeId, componentId, 'Excess'))
         }
 
         if (componentId.startsWith('meter') || componentId.startsWith('ess')) {
@@ -106,6 +107,54 @@ class ControllerIntegration extends ControllerService {
         openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'State'), (channelId, value) => {
             faultBinding.update(Number(value))
         })
+    }
+}
+
+class CombinedMeterIntegration extends ElectricityMeterService {
+    constructor(openems: Subscriber, displayName: string, edgeId: string, componentId: string, type: string) {
+        super(displayName)
+        this.subtype = type.toLowerCase()
+
+        if (componentId === '_sum' && type == 'Excess') {
+            this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.EXCESS)
+
+            const powerBinding = new CombinedBinding(0, 0, this.getCharacteristic(CurrentPower), (grid, ess) => -1 * (grid + ess))
+            openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'GridActivePower'), (channelId, value) => {
+                powerBinding.updateFirst(Number(value))
+            })
+            openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'EssActivePower'), (channelId, value) => {
+                powerBinding.updateSecond(Number(value))
+            })
+
+            if (openems.getComponentChannels(edgeId, componentId).includes('GridActivePowerL1')
+            && openems.getComponentChannels(edgeId, componentId).includes('GridActivePowerL2')
+            && openems.getComponentChannels(edgeId, componentId).includes('GridActivePowerL3')
+            && openems.getComponentChannels(edgeId, componentId).includes('EssActivePowerL1')
+            && openems.getComponentChannels(edgeId, componentId).includes('EssActivePowerL2')
+            && openems.getComponentChannels(edgeId, componentId).includes('EssActivePowerL3')) {
+                const powerBindingL1 = new CombinedBinding(0, 0, this.getCharacteristic(CurrentPowerL1), (grid, ess) => -1 * (grid + ess))
+                openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'GridActivePowerL1'), (channelId, value) => {
+                    powerBindingL1.updateFirst(Number(value))
+                })
+                openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'EssActivePowerL1'), (channelId, value) => {
+                    powerBindingL1.updateSecond(Number(value))
+                })
+                const powerBindingL2 = new CombinedBinding(0, 0, this.getCharacteristic(CurrentPowerL2), (grid, ess) => -1 * (grid + ess))
+                openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'GridActivePowerL2'), (channelId, value) => {
+                    powerBindingL2.updateFirst(Number(value))
+                })
+                openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'EssActivePowerL2'), (channelId, value) => {
+                    powerBindingL2.updateSecond(Number(value))
+                })
+                const powerBindingL3 = new CombinedBinding(0, 0, this.getCharacteristic(CurrentPowerL3), (grid, ess) => -1 * (grid + ess))
+                openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'GridActivePowerL3'), (channelId, value) => {
+                    powerBindingL3.updateFirst(Number(value))
+                })
+                openems.subscribe(Subscriber.CHANNELFILTER_EXACTLY(edgeId, componentId, 'EssActivePowerL3'), (channelId, value) => {
+                    powerBindingL3.updateSecond(Number(value))
+                })
+            }
+        }
     }
 }
 

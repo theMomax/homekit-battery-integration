@@ -15,6 +15,23 @@ export class Binding {
     }
 }
 
+export class CombinedBinding extends Binding {
+
+    constructor(value1: number, value2: number, characteristic: Characteristic, private mapper: (value1: number, value2: number) => number = (x,y) => x+y) {
+        super({v1: value1, v2: value2 }, {c: characteristic }, (values: any, characteristics: any) => {
+            characteristics.c.updateValue(mapper(values.v1, values.v2))
+        })
+    }
+
+    public updateFirst(value: number) {
+        this.updateAny('v1', value)
+    }
+
+    public updateSecond(value: number) {
+        this.updateAny('v2', value)
+    }
+}
+
 export class GenericBinding<T> extends Binding {
 
     constructor(value: T, characteristic: Characteristic, private mapper: (value: T) => T = v => v) {
