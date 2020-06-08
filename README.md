@@ -32,9 +32,9 @@ I've started working on an iOS app ([Home Batteries](https://github.com/theMomax
 
 I'm currently working on support for creating automations. Right now, all types of characterisitc-based triggers are supported. The predicate, actions and end-triggers can not be edited, but are displayed. The rest can be done via the Home app or the [Eve App](https://apps.apple.com/de/app/elgato-eve/id917695792) for now.
 
-Home Tab |  Rooms Tab        |  Automation Tab       |  Automation Overview    |  
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-![](https://user-images.githubusercontent.com/21169289/83887800-3dd45c00-a749-11ea-9323-148af03b5b27.PNG) | ![](https://user-images.githubusercontent.com/21169289/83887807-4167e300-a749-11ea-81b3-b4a99ef41b95.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/83887812-4331a680-a749-11ea-830e-c5660fca6fc9.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/83887816-43ca3d00-a749-11ea-90b8-3aa68edf5940.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/83887821-4462d380-a749-11ea-91d5-af6ffc80df2d.PNG)
+Home Tab |  Rooms Tab        |  Automation Tab       |  Automation Overview
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+![](https://user-images.githubusercontent.com/21169289/83887800-3dd45c00-a749-11ea-9323-148af03b5b27.PNG) | ![](https://user-images.githubusercontent.com/21169289/83887807-4167e300-a749-11ea-81b3-b4a99ef41b95.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/83887812-4331a680-a749-11ea-830e-c5660fca6fc9.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/83887816-43ca3d00-a749-11ea-90b8-3aa68edf5940.PNG) 
 Add Trigger View   | Overview (Home App)                   |  Accessory Information (Home App)    |  Sum Accessory ([Eve App](https://apps.apple.com/de/app/elgato-eve/id917695792))
 ![](https://user-images.githubusercontent.com/21169289/83887821-4462d380-a749-11ea-91d5-af6ffc80df2d.PNG) | ![](https://user-images.githubusercontent.com/21169289/80403759-6d798400-88c0-11ea-8dc6-354f13243df2.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/80403766-710d0b00-88c0-11ea-8eca-9609f0883ed6.PNG)  |  ![](https://user-images.githubusercontent.com/21169289/81083501-f57d1080-8ef4-11ea-8719-96d8643a5adb.jpeg)
 
