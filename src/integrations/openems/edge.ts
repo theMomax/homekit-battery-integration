@@ -181,6 +181,8 @@ class MeterIntegration extends ElectricityMeterService {
                 this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.OTHER)
                 break
             }
+        } else if (componentId.startsWith('ess')) {
+            this.getCharacteristic(ElectricityMeterType).updateValue(ElectricityMeterTypes.STORAGE)
         } else {
             const config = openems.getEdgeConfig(edgeId)
 
