@@ -2,6 +2,6 @@
 
 "use strict";
 
-process.title = "sdfghjklölkjhgfdf";
+process.title = "homekit-battery-integration";
 
 require("../lib/index.js");

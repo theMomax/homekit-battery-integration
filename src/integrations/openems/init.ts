@@ -6,7 +6,7 @@ var info = require('debug')('openems:init:info')
 var warn = require('debug')('openems:init:warn')
 var error = require('debug')('openems:init:error')
 
-const { program } = require('commander');
+import { program } from '../../config/commander'
 
 
 const MAC_PREFIX = "43:CF:2C:27:2A:1D"

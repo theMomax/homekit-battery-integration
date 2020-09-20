@@ -36,7 +36,7 @@ export class ElectricityMeterType extends Characteristic {
         minValue: 0,
         maxValue: 5,
         validValues: Object.keys(ElectricityMeterTypes).map(key => Number(ElectricityMeterTypes[key])).filter(e => !isNaN(e)),
-        perms: [Perms.READ]
+        perms: [Perms.PAIRED_READ]
         });
     }
 }

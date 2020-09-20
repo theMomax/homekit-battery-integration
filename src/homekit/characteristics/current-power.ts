@@ -13,7 +13,7 @@ class Power extends Characteristic {
         format: Formats.FLOAT,
         // @ts-ignore
         unit: Units.WATT,
-        perms: [Perms.READ, Perms.NOTIFY]
+        perms: [Perms.PAIRED_READ, Perms.NOTIFY]
         });
         this.value = this.getDefaultValue();
     }

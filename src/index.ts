@@ -3,7 +3,7 @@ import path from "path"
 
 import openems  from "./integrations/openems/init"
 
-const { program } = require('commander');
+import { program } from './config/commander'
 
 program
     .option('-s, --storage-path <path>', "path to HAP-nodejs' persistence folder", './persist')
