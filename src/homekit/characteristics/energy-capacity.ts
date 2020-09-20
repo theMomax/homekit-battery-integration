@@ -17,7 +17,7 @@ export class EnergyCapacity extends Characteristic {
         // @ts-ignore
         unit: Units.KWH,
         minValue: 0,
-        perms: [Perms.READ, Perms.NOTIFY]
+        perms: [Perms.PAIRED_READ, Perms.NOTIFY]
         });
         this.value = this.getDefaultValue();
     }
